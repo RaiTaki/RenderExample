@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "renderexample",
+  "version": "${version}",
+
+  "name": "RenderExample",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "MIT",
+  "icon": "assets/modid/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "xyz.raitaki.renderexample.RenderExample"
+    ]
+  },
+
+          "mixins": [
+        "RenderExample.mixins.json"
+      ],
+
+  "depends": {
+    "fabricloader": ">=0.14.7",
+              "fabric": "*",
+          "minecraft": "1.19"
+  }
+}
