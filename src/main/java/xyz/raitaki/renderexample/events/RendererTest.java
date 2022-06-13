@@ -16,15 +16,17 @@ public class RendererTest implements WorldRenderEvents.Last {
     public void onLast(WorldRenderContext context) {
         spawnCircleY();
         spawnCircle();
-        renderSphere();
+        renderFilledSphere();
+        renderEmptySphere();
+        renderLineSphere();
 
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.scale(1, 1, 1);
         Vec3d vec1 = new Vec3d(6, -59, 6);
         //RenderUtils.renderFlat(matrixStack, vec1, vec1.add(1, 0, 2), Color.GREEN);
-        RenderUtils.renderFilledT(matrixStack, vec1.add(0,0,1), vec1.add(3, 0, 3), Color.GREEN);
+        RenderUtils.renderFilledT(matrixStack, vec1.add(0, 0, 1), vec1.add(3, 0, 3), Color.GREEN);
         //renderFilledCircle();
-        //renderFilledTest();
+        renderFilledSphere();
         rangle += 0.005;
         timer++;
         if (timer % 10 == 0) {
@@ -37,7 +39,7 @@ public class RendererTest implements WorldRenderEvents.Last {
     double rangle = 0;
     Random rand = new Random();
     int timer = 0;
-    int check = 7;
+    int check = 5;
 
     public void spawnCircleY() {
         int particles = 100;
@@ -108,7 +110,8 @@ public class RendererTest implements WorldRenderEvents.Last {
     }
 
     ArrayList<Color> colorssphereFILL = new ArrayList<>();
-    public void renderSphere() {
+
+    public void renderLineSphere() {
         Vec3d mainpos = new Vec3d(0, 0, 0);
         MatrixStack positionMatrix = new MatrixStack();
         positionMatrix.scale(1, 1, 1);
@@ -122,7 +125,7 @@ public class RendererTest implements WorldRenderEvents.Last {
                 double z = Math.sin(a) * radius;
                 locs.add(mainpos.add(x, y, z));
 
-                if (colorsSphere.size() != (60*10*2)) {
+                if (colorsSphere.size() != (60 * 10 * 2)) {
                     float r = rand.nextFloat();
                     float g = rand.nextFloat();
                     float b = rand.nextFloat();
@@ -145,10 +148,10 @@ public class RendererTest implements WorldRenderEvents.Last {
 
             //to make it circle change rotatedmain to \/ rotatedmain2 to make it broken change it to rotatedmai
 
-            if(i == locs.size())
-                RenderUtils.renderLine(positionMatrix, rotatedmain2.add(2, -59, 2), rotatedsub2.add(2, -59, 2), colorsSphere.get(locs.size()-1));
+            if (i == locs.size())
+                RenderUtils.renderLine(positionMatrix, rotatedmain2.add(2, -59, 2), rotatedsub2.add(2, -59, 2), colorsSphere.get(locs.size() - 1));
             else
-                RenderUtils.renderLine(positionMatrix, rotatedmain2.add(2, -59, 2), rotatedsub2.add(2, -59, 2), colorsSphere.get((i/2)-1));
+                RenderUtils.renderLine(positionMatrix, rotatedmain2.add(2, -59, 2), rotatedsub2.add(2, -59, 2), colorsSphere.get((i / 2) - 1));
 
         }
 
@@ -195,13 +198,71 @@ public class RendererTest implements WorldRenderEvents.Last {
 
     boolean reduce = true;
     Color fillColor = null;
-    public void renderFilledTest(){
+
+    public void renderEmptySphere(){
+        int size = 8;
         Vec3d mainpos = new Vec3d(0, 0, 0);
         MatrixStack positionMatrix = new MatrixStack();
         positionMatrix.scale(0.5f, 0.5f, 0.5f);
 
         ArrayList<Vec3d> locs = new ArrayList<>();
-        for (double i = 0; i <= Math.PI; i += Math.PI / 30) {
+        for (double i = 0; i <= Math.PI; i += Math.PI / size) {
+            double radius = Math.sin(i)*2;
+            double y = Math.cos(i)*2;
+            for (double a = 0; a < Math.PI * 2; a += Math.PI / 10) {
+                double x = Math.cos(a) * radius;
+                double z = Math.sin(a) * radius;
+                locs.add(mainpos.add(x, y, z));
+
+                if (fillColor == null) {
+                    float f = rand.nextFloat();
+                    fillColor = new Color(f, 0, 0, 0.8f);
+                }
+            }
+        }
+
+        for (int i = 0; i < locs.size(); i++) {
+            Vec3d loc1 = locs.get(i);
+            Vec3d loc2 = locs.get(i);
+            Vec3d loc3 = locs.get(i);
+            Vec3d loc4 = locs.get(i);
+            if (loc1.y == loc2.y) {
+                if(i + 20 < locs.size())
+                    loc2 = locs.get(i + 19);
+                else loc2 = locs.get(locs.size()-1);
+            }
+            if (locs.indexOf(loc2) + 1 < locs.size())
+                loc4 = locs.get(locs.indexOf(loc2) + 1);
+            else loc4 = locs.get(locs.size()-2);
+
+            if (locs.indexOf(loc1) + 1 < locs.size()) {
+                loc3 = locs.get(locs.indexOf(loc1) + 1);
+            }
+            else loc3 = locs.get(locs.size()-2);
+
+            Vec3d rotatedmain = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc1, rangle), rangle);
+            Vec3d rotatedsub = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc2, rangle), rangle);
+            Vec3d rotatedsub2 = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc3, rangle), rangle);
+            Vec3d rotatedsub4 = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc4, rangle), rangle);
+
+            RenderUtils.renderQuad(positionMatrix, rotatedmain.add(-6, -59, -6),
+                    rotatedsub.add(-6, -59, -6),
+                    rotatedsub2.add(-6, -59, -6), rotatedsub4.add(-6, -59, -6), fillColor);
+        }
+
+        if (timer % 10 == 0) {
+            fillColor = changeColor(fillColor, 0.005f);
+        }
+    }
+
+    public void renderFilledSphere() {
+        int size = 8;
+        Vec3d mainpos = new Vec3d(0, 0, 0);
+        MatrixStack positionMatrix = new MatrixStack();
+        positionMatrix.scale(0.5f, 0.5f, 0.5f);
+
+        ArrayList<Vec3d> locs = new ArrayList<>();
+        for (double i = 0; i <= Math.PI; i += Math.PI / size) {
             double radius = Math.sin(i);
             double y = Math.cos(i);
             for (double a = 0; a < Math.PI * 2; a += Math.PI / 10) {
@@ -211,41 +272,45 @@ public class RendererTest implements WorldRenderEvents.Last {
 
                 if (fillColor == null) {
                     float f = rand.nextFloat();
-                    fillColor = new Color(f,0,0,0.8f);
+                    fillColor = new Color(f, 0, 0, 0.8f);
                 }
             }
         }
 
-        int colori = 0;
         for (int i = 0; i < locs.size(); i++) {
             Vec3d loc1 = locs.get(i);
             Vec3d loc2 = locs.get(i);
             Vec3d loc3 = locs.get(i);
             Vec3d loc4 = locs.get(i);
-            if (loc1.y != loc2.y) {
-                loc2 = locs.get(i-20);
+            if (loc1.y == loc2.y) {
+                if(i + 20 < locs.size())
+                    loc2 = locs.get(i + 19);
             }
-            if(i-20 >= 0) {
-                loc3 = locs.get(i - 20);
-                if(i+1 >= locs.size()) loc4 = locs.get(0);
-                else loc4 = locs.get(i+1);
+            if (locs.indexOf(loc2) + 1 < locs.size())
+                loc4 = locs.get(locs.indexOf(loc2) + 1);
+            if (locs.indexOf(loc1) + 1 < locs.size()) {
+                loc3 = locs.get(locs.indexOf(loc1) + 1);
             }
-            if(i-1 > 0) loc1 = locs.get(i-1);
 
-            Vec3d rotatedmain = VectorUtils.rotateAroundAxisY(loc1, rangle);
-            Vec3d rotatedsub = VectorUtils.rotateAroundAxisY(loc2, rangle);
-            Vec3d rotatedsub2 = VectorUtils.rotateAroundAxisY(loc3, rangle);
+            Vec3d rotatedmain = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc1, rangle), rangle);
+            Vec3d rotatedmain2 = VectorUtils.rotateAroundAxisX(mainpos, rangle);
+            Vec3d rotatedsub = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc2, rangle), rangle);
+            Vec3d rotatedsub2 = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc3, rangle), rangle);
+            Vec3d rotatedsub4 = VectorUtils.rotateAroundAxisY(VectorUtils.rotateAroundAxisX(loc4, rangle), rangle);
 
-            RenderUtils.renderFilledCircle(positionMatrix, loc1.add(-4,-59,-4),
-                    loc2.add(-4,-59,-4), mainpos.add(-4,-59,-4),
-                    loc3.add(-4,-59,-4),loc4.add(-4,-59,-4),
-                    fillColor);
+            RenderUtils.renderQuad(positionMatrix, rotatedmain.add(-4, -59, -4),
+                    rotatedsub.add(-4, -59, -4),
+                    rotatedsub2.add(-4, -59, -4), rotatedsub4.add(-4, -59, -4), fillColor);
+            RenderUtils.renderQuad(positionMatrix, rotatedmain.add(-4, -59, -4),
+                    rotatedsub.add(-4, -59, -4), rotatedmain2.add(-4, -59, -4),
+                    rotatedmain2.add(-4, -59, -4), fillColor);
         }
 
-        if (timer % check == 0) {
+        if (timer % 10 == 0) {
             fillColor = changeColor(fillColor, 0.005f);
         }
     }
+
 
     public void renderThing(Vec3d vec, Color color) {
         MatrixStack positionMatrix = new MatrixStack();
